@@ -43,7 +43,7 @@ def connectionLoop(sock):
             new_client_m = json.dumps(GameState)
             sock.sendto(bytes(new_client_m, 'utf8'), addr)
 
-def cleanClients():
+def cleanClients(sock):
    while True:
       dropped_players = []
       for c in list(clients.keys()):
@@ -60,9 +60,9 @@ def cleanClients():
             clients_lock.release()
 
       # Message all connected clients about dropped clients
-      if (len(dropped_players) < 0):
+      if (len(dropped_players) > 0):
          message = {"cmd": 2, "players": dropped_players}
-         m = json.dump(message);
+         m = json.dumps(message);
          for c in clients:
             sock.sendto(bytes(m, 'utf8'), (c[0], c[1]))
       
@@ -92,7 +92,7 @@ def main():
    s.bind(('', port))
    start_new_thread(gameLoop, (s,))
    start_new_thread(connectionLoop, (s,))
-   start_new_thread(cleanClients,())
+   start_new_thread(cleanClients,(s,))
    while True:
       time.sleep(1)
 
