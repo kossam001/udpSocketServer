@@ -60,8 +60,8 @@ def cleanClients():
             clients_lock.release()
 
       # Message all connected clients about dropped clients
-      if (len(dropped_players) < 0)
-         message = {"cmd": 2, "players", dropped_players}
+      if (len(dropped_players) < 0):
+         message = {"cmd": 2, "players": dropped_players}
          m = json.dump(message);
          for c in clients:
             sock.sendto(bytes(m, 'utf8'), (c[0], c[1]))
