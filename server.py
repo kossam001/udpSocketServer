@@ -20,22 +20,52 @@ def connectionLoop(sock):
             clients[addr]['lastBeat'] = datetime.now()
       else:
          if 'connect' in data:
+            # Fill in client information and add to dict
             clients[addr] = {}
             clients[addr]['lastBeat'] = datetime.now()
             clients[addr]['color'] = 0
-            message = {"cmd": 0,"player":{"id":str(addr)}}
+
+            # Initialize message to be sent to new player
+            GameState = {"cmd": 1, "players": []}
+
+            # C# Command class, Player class
+            message = {"cmd": 0,"player":{"id":str(addr)}} #0 = new player connected
             m = json.dumps(message)
             for c in clients:
-               sock.sendto(bytes(m,'utf8'), (c[0],c[1]))
+               sock.sendto(bytes(m,'utf8'), (c[0],c[1])) #0 = address, 1 = port
+               # Create information about the other clients
+               player = {}
+               player['id'] = str(c) # (address, port)
+               # Add information to message
+               GameState['players'].append(player)
+
+            # Send the new player the clients list
+            new_client_m = json.dumps(GameState)
+            sock.sendto(bytes(new_client_m, 'utf8'), addr)
 
 def cleanClients():
    while True:
+      dropped_players = []
       for c in list(clients.keys()):
          if (datetime.now() - clients[c]['lastBeat']).total_seconds() > 5:
+
+            # Track dropped player
+            player = {}
+            player['id'] = str(c)
+            dropped_players.append(player)
+
             print('Dropped Client: ', c)
             clients_lock.acquire()
             del clients[c]
             clients_lock.release()
+
+      # Message all connected clients about dropped clients
+      if (len(dropped_players) < 0)
+         message = {"cmd": 2, "players", dropped_players}
+         m = json.dump(message);
+         for c in clients:
+            sock.sendto(bytes(m, 'utf8'), (c[0], c[1]))
+      
       time.sleep(1)
 
 def gameLoop(sock):
