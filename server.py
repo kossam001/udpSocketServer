@@ -15,33 +15,44 @@ def connectionLoop(sock):
    while True:
       data, addr = sock.recvfrom(1024)
       data = str(data)
+
+      data = data.split(";")
+
       if addr in clients:
-         if 'heartbeat' in data:
-            clients[addr]['lastBeat'] = datetime.now()
+         for params in data:
+            if 'heartbeat' in params:
+               clients[addr]['lastBeat'] = datetime.now()
+            elif 'position' in params:
+               # Extract the position from the parameter
+               coords = params.split("position=")[1]
+               coords = coords.split(",")
+               clients[addr]['position'] = {"X": coords[0], "Y": coords[1], "Z": coords[2]}
+               
       else:
-         if 'connect' in data:
-            # Fill in client information and add to dict
-            clients[addr] = {}
-            clients[addr]['lastBeat'] = datetime.now()
-            clients[addr]['color'] = 0
+         for params in data:
+            if 'connect' in params:
+               # Fill in client information and add to dict
+               clients[addr] = {}
+               clients[addr]['lastBeat'] = datetime.now()
+               clients[addr]['color'] = 0
 
-            # Initialize message to be sent to new player
-            GameState = {"cmd": 1, "players": []}
+               # Initialize message to be sent to new player
+               GameState = {"cmd": 1, "players": []}
 
-            # C# Command class, Player class
-            message = {"cmd": 0,"player":{"id":str(addr)}} #0 = new player connected
-            m = json.dumps(message)
-            for c in clients:
-               sock.sendto(bytes(m,'utf8'), (c[0],c[1])) #0 = address, 1 = port
-               # Create information about the other clients
-               player = {}
-               player['id'] = str(c) # (address, port)
-               # Add information to message
-               GameState['players'].append(player)
+               # C# Command class, Player class
+               message = {"cmd": 0,"player":{"id":str(addr)}} #0 = new player connected
+               m = json.dumps(message)
+               for c in clients:
+                  sock.sendto(bytes(m,'utf8'), (c[0],c[1])) #0 = address, 1 = port
+                  # Create information about the other clients
+                  player = {}
+                  player['id'] = str(c) # (address, port)
+                  # Add information to message
+                  GameState['players'].append(player)
 
-            # Send the new player the clients list
-            new_client_m = json.dumps(GameState)
-            sock.sendto(bytes(new_client_m, 'utf8'), addr)
+               # Send the new player the clients list
+               new_client_m = json.dumps(GameState)
+               sock.sendto(bytes(new_client_m, 'utf8'), addr)
 
 def cleanClients(sock):
    while True:
@@ -75,9 +86,8 @@ def gameLoop(sock):
       print (clients)
       for c in clients:
          player = {}
-         clients[c]['color'] = {"R": random.random(), "G": random.random(), "B": random.random()}
          player['id'] = str(c)
-         player['color'] = clients[c]['color']
+         player['position'] = clients[c]['position']
          GameState['players'].append(player)
       s=json.dumps(GameState)
       print(s)
