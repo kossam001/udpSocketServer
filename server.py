@@ -34,7 +34,7 @@ def connectionLoop(sock):
                # Fill in client information and add to dict
                clients[addr] = {}
                clients[addr]['lastBeat'] = datetime.now()
-               clients[addr]['color'] = 0
+               clients[addr]['position'] = 0
 
                # Initialize message to be sent to new player
                GameState = {"cmd": 1, "players": []}
