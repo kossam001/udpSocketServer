@@ -26,7 +26,7 @@ def connectionLoop(sock):
                # Extract the position from the parameter
                coords = params.split("position=")[1]
                coords = coords.split(",")
-               clients[addr]['position'] = {"X": coords[0], "Y": coords[1], "Z": coords[2]}
+               clients[addr]['position'] = {"X": float(coords[0]), "Y": float(coords[1]), "Z": float(coords[2])}
                
       else:
          for params in data:
@@ -34,7 +34,7 @@ def connectionLoop(sock):
                # Fill in client information and add to dict
                clients[addr] = {}
                clients[addr]['lastBeat'] = datetime.now()
-               clients[addr]['position'] = 0
+               clients[addr]['position'] = {"X": 0, "Y": 0, "Z": 0}
 
                # Initialize message to be sent to new player
                GameState = {"cmd": 1, "players": []}
