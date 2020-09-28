@@ -17,6 +17,7 @@ def connectionLoop(sock):
       data = str(data)
 
       data = data.split(";")
+      print(data)
 
       if addr in clients:
          for params in data:
@@ -77,7 +78,7 @@ def cleanClients(sock):
          for c in clients:
             sock.sendto(bytes(m, 'utf8'), (c[0], c[1]))
       
-      time.sleep(1)
+      time.sleep(5)
 
 def gameLoop(sock):
    while True:
@@ -94,7 +95,7 @@ def gameLoop(sock):
       for c in clients:
          sock.sendto(bytes(s,'utf8'), (c[0],c[1]))
       clients_lock.release()
-      time.sleep(1)
+      time.sleep(1/30)
 
 def main():
    port = 12345
@@ -104,7 +105,7 @@ def main():
    start_new_thread(connectionLoop, (s,))
    start_new_thread(cleanClients,(s,))
    while True:
-      time.sleep(1)
+      time.sleep(1/30)
 
 if __name__ == '__main__':
    main()
